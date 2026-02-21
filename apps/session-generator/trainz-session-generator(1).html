@@ -1,0 +1,2673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainz Session Generator</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #d32f2f;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #d32f2f;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+        }
+        
+        .slider-container input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #d32f2f;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #d32f2f;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .duration-display {
+            text-align: center;
+            font-size: 1.3em;
+            color: #d32f2f;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .asset-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .asset-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #d32f2f;
+        }
+        
+        .asset-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .asset-item label {
+            cursor: pointer;
+            font-weight: normal;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(211, 47, 47, 0.5);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .generate-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .output-section {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .output-section h2 {
+            color: #1e3c72;
+            margin-bottom: 20px;
+        }
+        
+        .session-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 25px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .copy-button {
+            margin-top: 15px;
+            background: #2a5298;
+            padding: 10px 25px;
+            font-size: 1em;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .commodity-row {
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .commodity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .commodity-header h4 {
+            margin: 0;
+            color: #1e3c72;
+        }
+        
+        .remove-commodity-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .car-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .car-type-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .car-type-checkbox input {
+            width: auto;
+        }
+        
+        .car-type-checkbox label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .asset-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .modal {
+                max-width: 100%;
+                margin: 0;
+            }
+        }
+
+        .railroad-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .railroad-card:hover {
+            border-color: #d32f2f;
+        }
+
+        .railroad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .railroad-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .railroad-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .railroad-badge.class-i {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .railroad-badge.regional {
+            background: #ff9800;
+            color: white;
+        }
+
+        .railroad-badge.short-line {
+            background: #2a5298;
+            color: white;
+        }
+
+        .railroad-badge.terminal {
+            background: #9c27b0;
+            color: white;
+        }
+
+        .railroad-badge.player {
+            background: #28a745;
+            color: white;
+        }
+
+        .railroad-badge.ai {
+            background: #6c757d;
+            color: white;
+        }
+
+        .railroad-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .railroad-selection-area {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .railroad-selection-header {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Prepopulated data
+        const RAILROADS = [
+            'Amtrak',
+            'Baltimore & Ohio',
+            'BNSF Railway',
+            'Burlington Northern',
+            'Canadian National',
+            'Canadian Pacific',
+            'Chesapeake & Ohio',
+            'Conrail',
+            'CSX Transportation',
+            'Kansas City Southern',
+            'New York Central',
+            'Norfolk Southern',
+            'Penn Central',
+            'Pennsylvania Railroad',
+            'Santa Fe (ATSF)',
+            'Southern Pacific',
+            'Union Pacific',
+            'Other/Custom'
+        ];
+
+        const ERAS = [
+            'Modern (2000s-present)',
+            'Transition Era (1990s)',
+            'Fallen Flags (1970s-1980s)',
+            'Classic Diesel (1950s-1960s)',
+            'Transition to Diesel (1940s-1950s)',
+            'Steam Era (pre-1950)',
+        ];
+
+        const REGIONS = [
+            'Canada',
+            'Great Plains',
+            'Midwest',
+            'Mountain West',
+            'Northeast',
+            'Southeast',
+            'Southwest',
+            'West Coast',
+            'Other/International'
+        ];
+
+        const LOCOMOTIVE_TYPES = [
+            { name: 'EMD SD40-2', type: 'Road Freight', hp: 3000, era: 'Fallen Flags' },
+            { name: 'EMD SD70ACe', type: 'Road Freight', hp: 4300, era: 'Modern' },
+            { name: 'GE ES44AC', type: 'Road Freight', hp: 4400, era: 'Modern' },
+            { name: 'GE Dash 9-44CW', type: 'Road Freight', hp: 4400, era: 'Transition Era' },
+            { name: 'EMD GP38-2', type: 'Road Switcher', hp: 2000, era: 'Fallen Flags' },
+            { name: 'EMD GP40-2', type: 'Road Switcher', hp: 3000, era: 'Fallen Flags' },
+            { name: 'EMD SW1200', type: 'Switcher', hp: 1200, era: 'Classic Diesel' },
+            { name: 'EMD SW1500', type: 'Switcher', hp: 1500, era: 'Classic Diesel' },
+            { name: 'GE C44-9W', type: 'Road Freight', hp: 4400, era: 'Transition Era' },
+            { name: 'EMD F7A', type: 'Road Freight', hp: 1500, era: 'Classic Diesel' },
+            { name: 'ALCO RS-3', type: 'Road Switcher', hp: 1600, era: 'Classic Diesel' },
+        ];
+
+        const ROLLING_STOCK_TYPES = [
+            // Freight Cars
+            { name: '50ft Boxcar', category: 'Freight', commodities: ['General Freight', 'Paper Products'] },
+            { name: '60ft Boxcar', category: 'Freight', commodities: ['General Freight', 'Auto Parts'] },
+            { name: 'Covered Hopper', category: 'Freight', commodities: ['Grain', 'Cement'] },
+            { name: 'Open Hopper', category: 'Freight', commodities: ['Coal', 'Gravel'] },
+            { name: 'Tank Car', category: 'Freight', commodities: ['Chemicals', 'Petroleum'] },
+            { name: 'Centerbeam Flatcar', category: 'Freight', commodities: ['Lumber', 'Steel Beams'] },
+            { name: 'Flatcar', category: 'Freight', commodities: ['Steel plate', 'Rails'] },
+            { name: 'Gondola', category: 'Freight', commodities: ['Scrap Metal', 'Steel Coils'] },
+            { name: 'Coil Car', category: 'Freight', commodities: ['Steel coils'] },
+            { name: 'Refrigerated Boxcar', category: 'Freight', commodities: ['Produce', 'Frozen Foods'] },
+            { name: 'Intermodal Well Car', category: 'Freight', commodities: ['Containers', 'Trailers'] },
+            { name: 'Autorack', category: 'Freight', commodities: ['Automobiles'] },
+            { name: 'Caboose', category: 'Freight', commodities: ['Train crew'] },
+            // Passenger Cars
+            { name: 'Coach', category: 'Passenger', commodities: ['Passengers'] },
+            { name: 'Sleeper', category: 'Passenger', commodities: ['Passengers'] },
+            { name: 'Dining Car', category: 'Passenger', commodities: ['Passengers'] },
+            { name: 'Observation Car', category: 'Passenger', commodities: ['Passengers'] },
+            { name: 'Baggage Car', category: 'Passenger', commodities: ['General goods'] },
+            { name: 'Railway Post Office (RPO)', category: 'Passenger', commodities: ['Mail', 'General goods'] },
+        ];
+
+        const COMMODITIES = [
+            'Coal',
+            'Grain',
+            'Lumber',
+            'Steel Coils',
+            'Automobiles',
+            'Chemicals',
+            'Petroleum',
+            'Containers',
+            'General Freight',
+            'Paper Products',
+            'Cement',
+            'Gravel',
+            'Scrap Metal',
+            'Produce',
+            'Ore',
+            'Auto Parts'
+        ];
+
+        const LOCATION_TYPES = {
+            'Interchange Track': [],
+            'Steel Mill': [
+                { commodity: 'Coal (coking coal)', direction: 'Receives', carTypes: ['Open Hopper', 'Covered Hopper'] },
+                { commodity: 'Iron Ore', direction: 'Receives', carTypes: ['Open Hopper', 'Gondola'] },
+                { commodity: 'Limestone/Flux', direction: 'Receives', carTypes: ['Open Hopper', 'Covered Hopper'] },
+                { commodity: 'Scrap Metal', direction: 'Receives', carTypes: ['Gondola', 'Open Hopper'] },
+                { commodity: 'Steel Coils', direction: 'Ships', carTypes: ['Gondola'] },
+                { commodity: 'Finished Plate/Sheet', direction: 'Ships', carTypes: ['Centerbeam Flatcar', 'Gondola'] }
+            ],
+            'Automotive Assembly Plant': [
+                { commodity: 'Steel Coil', direction: 'Receives', carTypes: ['Gondola'] },
+                { commodity: 'Auto Parts', direction: 'Receives', carTypes: ['Boxcar', '60ft Boxcar'] },
+                { commodity: 'Plastic Resins', direction: 'Receives', carTypes: ['Covered Hopper', 'Tank Car'] },
+                { commodity: 'Finished Vehicles', direction: 'Ships', carTypes: ['Autorack', 'Intermodal Well Car'] }
+            ],
+            'Grain Elevator': [
+                { commodity: 'Corn', direction: 'Both', carTypes: ['Covered Hopper'] },
+                { commodity: 'Wheat', direction: 'Both', carTypes: ['Covered Hopper'] },
+                { commodity: 'Soybeans', direction: 'Both', carTypes: ['Covered Hopper'] },
+                { commodity: 'Barley', direction: 'Both', carTypes: ['Covered Hopper'] },
+                { commodity: 'Fertilizer (dry)', direction: 'Receives', carTypes: ['Covered Hopper'] }
+            ],
+            'Grain Processor / Flour Mill': [
+                { commodity: 'Wheat/Corn', direction: 'Receives', carTypes: ['Covered Hopper'] },
+                { commodity: 'Flour/Meal/Feed', direction: 'Ships', carTypes: ['Covered Hopper', 'Boxcar', '50ft Boxcar', '60ft Boxcar'] }
+            ],
+            'Coal Mine / Loadout': [
+                { commodity: 'Thermal Coal', direction: 'Ships', carTypes: ['Open Hopper', 'Covered Hopper'] },
+                { commodity: 'Metallurgical Coal', direction: 'Ships', carTypes: ['Open Hopper', 'Covered Hopper'] }
+            ],
+            'Chemical Plant': [
+                { commodity: 'Liquid Chemicals', direction: 'Both', carTypes: ['Tank Car'] },
+                { commodity: 'Plastic Pellets', direction: 'Both', carTypes: ['Covered Hopper'] },
+                { commodity: 'Industrial Gases', direction: 'Both', carTypes: ['Tank Car'] }
+            ],
+            'Cement Plant': [
+                { commodity: 'Limestone/Gypsum', direction: 'Receives', carTypes: ['Open Hopper', 'Covered Hopper'] },
+                { commodity: 'Cement (bulk)', direction: 'Ships', carTypes: ['Covered Hopper'] },
+                { commodity: 'Fly Ash', direction: 'Ships', carTypes: ['Covered Hopper'] }
+            ],
+            'Lumber / Sawmill': [
+                { commodity: 'Logs', direction: 'Receives', carTypes: ['Centerbeam Flatcar', 'Gondola'] },
+                { commodity: 'Lumber', direction: 'Ships', carTypes: ['Centerbeam Flatcar', 'Boxcar', '50ft Boxcar', '60ft Boxcar'] },
+                { commodity: 'Plywood/OSB', direction: 'Ships', carTypes: ['Centerbeam Flatcar'] }
+            ],
+            'Paper & Pulp Mill': [
+                { commodity: 'Wood Chips', direction: 'Receives', carTypes: ['Gondola', 'Open Hopper'] },
+                { commodity: 'Recovered Paper', direction: 'Receives', carTypes: ['Gondola', 'Boxcar', '50ft Boxcar', '60ft Boxcar'] },
+                { commodity: 'Finished Paper Rolls', direction: 'Ships', carTypes: ['Boxcar', '50ft Boxcar', '60ft Boxcar'] }
+            ],
+            'Petroleum Refinery': [
+                { commodity: 'Crude Oil', direction: 'Receives', carTypes: ['Tank Car'] },
+                { commodity: 'Gasoline/Diesel/Jet Fuel', direction: 'Ships', carTypes: ['Tank Car'] },
+                { commodity: 'Chemical Feedstocks', direction: 'Both', carTypes: ['Tank Car'] }
+            ],
+            'Intermodal Terminal': [
+                { commodity: 'Containers/Trailers', direction: 'Both', carTypes: ['Intermodal Well Car'] }
+            ],
+            'Brick / Concrete Products Plant': [
+                { commodity: 'Sand/Clay', direction: 'Receives', carTypes: ['Covered Hopper', 'Open Hopper'] },
+                { commodity: 'Brick/Concrete Block', direction: 'Ships', carTypes: ['Centerbeam Flatcar', 'Gondola', 'Boxcar', '50ft Boxcar', '60ft Boxcar'] }
+            ],
+            'Food & Beverage Plant': [
+                { commodity: 'Sugar/Grain/Ingredients', direction: 'Receives', carTypes: ['Covered Hopper'] },
+                { commodity: 'Food-Grade Liquids', direction: 'Both', carTypes: ['Tank Car'] },
+                { commodity: 'Packaged Goods', direction: 'Ships', carTypes: ['Boxcar', '50ft Boxcar', '60ft Boxcar', 'Refrigerated Boxcar'] }
+            ],
+            'Steel Service Center': [
+                { commodity: 'Steel Coil', direction: 'Both', carTypes: ['Gondola'] },
+                { commodity: 'Plate/Sheet', direction: 'Both', carTypes: ['Centerbeam Flatcar', 'Gondola'] },
+                { commodity: 'Structural Steel', direction: 'Both', carTypes: ['Centerbeam Flatcar', 'Gondola'] }
+            ],
+            'Scrap Yard': [
+                { commodity: 'Ferrous Scrap', direction: 'Both', carTypes: ['Gondola', 'Open Hopper'] },
+                { commodity: 'Nonferrous Scrap', direction: 'Both', carTypes: ['Boxcar', '50ft Boxcar', '60ft Boxcar'] }
+            ],
+            'Non-Coal Mine (Salt, Potash, Copper, Iron Ore)': [
+                { commodity: 'Iron Ore', direction: 'Ships', carTypes: ['Open Hopper', 'Gondola'] },
+                { commodity: 'Potash', direction: 'Ships', carTypes: ['Covered Hopper'] },
+                { commodity: 'Salt', direction: 'Ships', carTypes: ['Covered Hopper'] },
+                { commodity: 'Copper Concentrate', direction: 'Ships', carTypes: ['Gondola'] }
+            ],
+            'Power Plant (Utility)': [
+                { commodity: 'Coal', direction: 'Receives', carTypes: ['Open Hopper', 'Covered Hopper'] },
+                { commodity: 'Pet Coke', direction: 'Receives', carTypes: ['Covered Hopper'] },
+                { commodity: 'Biomass', direction: 'Receives', carTypes: ['Covered Hopper', 'Gondola'] }
+            ],
+            'Yard': [],
+            'Team Track': [],
+            'Transload Facility': [],
+            'Other/Custom': []
+        };
+
+        function App() {
+            // Route metadata state
+            const [routeName, setRouteName] = useState('');
+            const [railroads, setRailroads] = useState([]); // Array of railroad objects
+            const [showRailroadModal, setShowRailroadModal] = useState(false);
+            const [railroadForm, setRailroadForm] = useState({
+                name: '',
+                customName: '',
+                type: '',
+                role: 'player',
+                locomotives: [],
+                rollingStock: []
+            });
+            const [editingRailroadIndex, setEditingRailroadIndex] = useState(null);
+            const [selectedRailroadsForSession, setSelectedRailroadsForSession] = useState([]);
+            const [railroad, setRailroad] = useState(''); // Keep for backward compatibility during transition
+            const [customRailroads, setCustomRailroads] = useState([]);
+            const [customRailroadInput, setCustomRailroadInput] = useState('');
+            const [era, setEra] = useState('');
+            const [region, setRegion] = useState('');
+            const [sessionDuration, setSessionDuration] = useState('short');
+
+            // Asset selections
+            const [selectedLocos, setSelectedLocos] = useState([]);
+            const [customLocos, setCustomLocos] = useState([]);
+            const [customLocoInput, setCustomLocoInput] = useState('');
+            const [selectedRollingStock, setSelectedRollingStock] = useState([]);
+            const [locations, setLocations] = useState([]);
+
+            // Custom car management (global)
+            const [customCars, setCustomCars] = useState([]);
+            const [showCustomCarModal, setShowCustomCarModal] = useState(false);
+            const [customCarForm, setCustomCarForm] = useState({
+                name: '',
+                length: '50',
+                commodities: []
+            });
+
+            // Custom locomotive modal (global)
+            const [showCustomLocoModal, setShowCustomLocoModal] = useState(false);
+            const [customLocoForm, setCustomLocoForm] = useState({
+                name: '',
+                hp: '3000',
+                type: 'Diesel'
+            });
+
+            // Location modal state
+            const [showLocationModal, setShowLocationModal] = useState(false);
+            const [editingLocationIndex, setEditingLocationIndex] = useState(null);
+            const [locationForm, setLocationForm] = useState({
+                name: '',
+                type: '',
+                customType: '',
+                capacity: '',
+                commodities: [],
+                railroads: []
+            });
+
+            // Extract all unique default commodities from LOCATION_TYPES
+            const getAllDefaultCommodities = () => {
+                const allCommodities = [];
+                const seen = new Set();
+                
+                Object.values(LOCATION_TYPES).forEach(locCommodities => {
+                    locCommodities.forEach(comm => {
+                        if (comm.commodity && !seen.has(comm.commodity)) {
+                            seen.add(comm.commodity);
+                            allCommodities.push({
+                                commodity: comm.commodity,
+                                direction: comm.direction,
+                                carTypes: comm.carTypes
+                            });
+                        }
+                    });
+                });
+                
+                return allCommodities.sort((a, b) => a.commodity.localeCompare(b.commodity));
+            };
+
+            // Output
+            const [sessionOutput, setSessionOutput] = useState('');
+
+            const toggleLoco = (loco) => {
+                setSelectedLocos(prev => 
+                    prev.includes(loco) 
+                        ? prev.filter(l => l !== loco)
+                        : [...prev, loco]
+                );
+            };
+
+            const selectAllLocos = () => {
+                if (selectedLocos.length === LOCOMOTIVE_TYPES.length) {
+                    setSelectedLocos([]);
+                } else {
+                    setSelectedLocos([...LOCOMOTIVE_TYPES]);
+                }
+            };
+
+            const addCustomLoco = () => {
+                if (customLocoInput.trim()) {
+                    const newLoco = {
+                        name: customLocoInput.trim(),
+                        type: 'Custom',
+                        hp: 0,
+                        era: 'Custom'
+                    };
+                    setCustomLocos(prev => [...prev, newLoco]);
+                    setSelectedLocos(prev => [...prev, newLoco]);
+                    setCustomLocoInput('');
+                }
+            };
+
+            const removeCustomLoco = (index) => {
+                const locoToRemove = customLocos[index];
+                setCustomLocos(prev => prev.filter((_, i) => i !== index));
+                setSelectedLocos(prev => prev.filter(l => l !== locoToRemove));
+            };
+
+            // Railroad Management Functions
+            const openRailroadModal = () => {
+                setRailroadForm({
+                    name: '',
+                    customName: '',
+                    type: '',
+                    role: 'player',
+                    locomotives: [],
+                    rollingStock: []
+                });
+                setEditingRailroadIndex(null);
+                setShowRailroadModal(true);
+            };
+
+            const openEditRailroadModal = (index) => {
+                const rr = railroads[index];
+                const isStandard = RAILROADS.includes(rr.name);
+                setRailroadForm({
+                    name: isStandard ? rr.name : 'Other/Custom',
+                    customName: isStandard ? '' : rr.name,
+                    type: rr.type,
+                    role: rr.role,
+                    locomotives: rr.locomotives || [],
+                    rollingStock: rr.rollingStock || []
+                });
+                setEditingRailroadIndex(index);
+                setShowRailroadModal(true);
+            };
+
+            const closeRailroadModal = () => {
+                setShowRailroadModal(false);
+                setEditingRailroadIndex(null);
+            };
+
+            const saveRailroad = () => {
+                let actualName;
+                if (railroadForm.name === 'Other/Custom') {
+                    if (!railroadForm.customName || !railroadForm.customName.trim()) {
+                        alert('Please enter a custom railroad name');
+                        return;
+                    }
+                    actualName = railroadForm.customName.trim();
+                } else if (!railroadForm.name) {
+                    alert('Please select a railroad');
+                    return;
+                } else {
+                    actualName = railroadForm.name;
+                }
+
+                if (!railroadForm.type) {
+                    alert('Please select a railroad type');
+                    return;
+                }
+
+                if (railroadForm.locomotives.length === 0) {
+                    alert('Please select at least one locomotive');
+                    return;
+                }
+
+                if (railroadForm.rollingStock.length === 0) {
+                    alert('Please select at least one rolling stock type');
+                    return;
+                }
+
+                const isDuplicate = railroads.some((rr, idx) => 
+                    rr.name === actualName && idx !== editingRailroadIndex
+                );
+                
+                if (isDuplicate) {
+                    alert(`${actualName} is already added to this route`);
+                    return;
+                }
+
+                if (editingRailroadIndex === null && railroads.length >= 99) {
+                    alert('Maximum of 99 railroads per route');
+                    return;
+                }
+
+                const railroad = {
+                    name: actualName,
+                    type: railroadForm.type,
+                    role: railroadForm.role,
+                    locomotives: railroadForm.locomotives,
+                    rollingStock: railroadForm.rollingStock
+                };
+
+                if (editingRailroadIndex !== null) {
+                    const newRailroads = [...railroads];
+                    newRailroads[editingRailroadIndex] = railroad;
+                    setRailroads(newRailroads);
+                } else {
+                    setRailroads(prev => [...prev, railroad]);
+                }
+
+                closeRailroadModal();
+            };
+
+            const removeRailroad = (index) => {
+                if (confirm(`Remove ${railroads[index].name}?`)) {
+                    setRailroads(prev => prev.filter((_, i) => i !== index));
+                    setSelectedRailroadsForSession(prev => 
+                        prev.filter(rr => rr.name !== railroads[index].name)
+                    );
+                }
+            };
+
+            const toggleRailroadForSession = (railroad) => {
+                setSelectedRailroadsForSession(prev => {
+                    const exists = prev.find(rr => rr.name === railroad.name);
+                    if (exists) {
+                        return prev.filter(rr => rr.name !== railroad.name);
+                    } else {
+                        return [...prev, railroad];
+                    }
+                });
+            };
+
+            const toggleRailroadLoco = (loco) => {
+                setRailroadForm(prev => {
+                    const exists = prev.locomotives.find(l => l.name === loco.name);
+                    if (exists) {
+                        return {...prev, locomotives: prev.locomotives.filter(l => l.name !== loco.name)};
+                    } else {
+                        return {...prev, locomotives: [...prev.locomotives, loco]};
+                    }
+                });
+            };
+
+            const toggleRailroadRollingStock = (stock) => {
+                setRailroadForm(prev => {
+                    const exists = prev.rollingStock.find(s => s.name === stock.name);
+                    if (exists) {
+                        return {...prev, rollingStock: prev.rollingStock.filter(s => s.name !== stock.name)};
+                    } else {
+                        return {...prev, rollingStock: [...prev.rollingStock, stock]};
+                    }
+                });
+            };
+
+            const selectAllRailroadLocos = () => {
+                const allLocos = [...LOCOMOTIVE_TYPES, ...customLocos];
+                const allSelected = allLocos.length === railroadForm.locomotives.length;
+                setRailroadForm(prev => ({
+                    ...prev, 
+                    locomotives: allSelected ? [] : allLocos
+                }));
+            };
+
+            const selectAllRailroadRollingStock = () => {
+                const allStock = [...ROLLING_STOCK_TYPES, ...customCars];
+                const allSelected = allStock.length === railroadForm.rollingStock.length;
+                setRailroadForm(prev => ({
+                    ...prev,
+                    rollingStock: allSelected ? [] : allStock
+                }));
+            };
+
+            const selectAllRailroadFreight = () => {
+                const freightStock = [...ROLLING_STOCK_TYPES.filter(s => s.category === 'Freight'), ...customCars];
+                const currentFreight = railroadForm.rollingStock.filter(s => 
+                    freightStock.some(fs => fs.name === s.name)
+                );
+                
+                if (currentFreight.length === freightStock.length) {
+                    const passengersOnly = railroadForm.rollingStock.filter(s => s.category === 'Passenger');
+                    setRailroadForm(prev => ({...prev, rollingStock: passengersOnly}));
+                } else {
+                    const existingPassengers = railroadForm.rollingStock.filter(s => s.category === 'Passenger');
+                    setRailroadForm(prev => ({
+                        ...prev,
+                        rollingStock: [...existingPassengers, ...freightStock]
+                    }));
+                }
+            };
+
+            const selectAllRailroadPassenger = () => {
+                const passengerStock = ROLLING_STOCK_TYPES.filter(s => s.category === 'Passenger');
+                const currentPassenger = railroadForm.rollingStock.filter(s => s.category === 'Passenger');
+                
+                if (currentPassenger.length === passengerStock.length) {
+                    const freightOnly = railroadForm.rollingStock.filter(s => s.category !== 'Passenger');
+                    setRailroadForm(prev => ({...prev, rollingStock: freightOnly}));
+                } else {
+                    const existingFreight = railroadForm.rollingStock.filter(s => s.category !== 'Passenger');
+                    setRailroadForm(prev => ({
+                        ...prev,
+                        rollingStock: [...existingFreight, ...passengerStock]
+                    }));
+                }
+            };
+
+            // Custom Locomotive Modal Functions
+            const openCustomLocoModal = () => {
+                setCustomLocoForm({
+                    name: '',
+                    hp: '3000',
+                    type: 'Diesel'
+                });
+                setShowCustomLocoModal(true);
+            };
+
+            const closeCustomLocoModal = () => {
+                setShowCustomLocoModal(false);
+            };
+
+            const saveCustomLoco = () => {
+                if (!customLocoForm.name.trim()) {
+                    alert('Please enter a locomotive name');
+                    return;
+                }
+
+                if (!customLocoForm.hp || parseInt(customLocoForm.hp) < 1) {
+                    alert('Please enter a valid horsepower');
+                    return;
+                }
+
+                const newLoco = {
+                    name: customLocoForm.name.trim(),
+                    hp: parseInt(customLocoForm.hp),
+                    type: customLocoForm.type,
+                    isCustom: true
+                };
+
+                setCustomLocos(prev => [...prev, newLoco]);
+                closeCustomLocoModal();
+            };
+
+            // Custom Car Modal Functions  
+            const openCustomCarModal = () => {
+                setCustomCarForm({
+                    name: '',
+                    length: '50',
+                    commodities: []
+                });
+                setShowCustomCarModal(true);
+            };
+
+            const closeCustomCarModal = () => {
+                setShowCustomCarModal(false);
+            };
+
+            const saveCustomCar = () => {
+                if (!customCarForm.name.trim()) {
+                    alert('Please enter a car type name');
+                    return;
+                }
+
+                if (!customCarForm.length || parseInt(customCarForm.length) < 1) {
+                    alert('Please enter a valid car length');
+                    return;
+                }
+
+                if (customCarForm.commodities.length === 0) {
+                    alert('Please select at least one commodity this car can carry');
+                    return;
+                }
+
+                const newCar = {
+                    name: customCarForm.name.trim(),
+                    category: 'Freight',
+                    length: parseInt(customCarForm.length),
+                    commodities: customCarForm.commodities,
+                    isCustom: true
+                };
+
+                setCustomCars(prev => [...prev, newCar]);
+                closeCustomCarModal();
+            };
+
+            const toggleCustomCarCommodity = (commodity) => {
+                setCustomCarForm(prev => {
+                    const exists = prev.commodities.includes(commodity);
+                    if (exists) {
+                        return {...prev, commodities: prev.commodities.filter(c => c !== commodity)};
+                    } else {
+                        return {...prev, commodities: [...prev.commodities, commodity]};
+                    }
+                });
+            };
+
+            const toggleRollingStock = (stock) => {
+                setSelectedRollingStock(prev => 
+                    prev.includes(stock) 
+                        ? prev.filter(s => s !== stock)
+                        : [...prev, stock]
+                );
+            };
+
+            const selectAllRollingStock = () => {
+                if (selectedRollingStock.length === ROLLING_STOCK_TYPES.length) {
+                    setSelectedRollingStock([]);
+                } else {
+                    setSelectedRollingStock([...ROLLING_STOCK_TYPES]);
+                }
+            };
+
+            const selectAllFreightCars = () => {
+                const freightCars = ROLLING_STOCK_TYPES.filter(stock => stock.category === 'Freight');
+                const allFreightSelected = freightCars.every(fc => selectedRollingStock.includes(fc));
+                
+                if (allFreightSelected) {
+                    // Deselect all freight cars
+                    setSelectedRollingStock(prev => prev.filter(stock => stock.category !== 'Freight'));
+                } else {
+                    // Select all freight cars
+                    const nonFreight = selectedRollingStock.filter(stock => stock.category !== 'Freight');
+                    setSelectedRollingStock([...nonFreight, ...freightCars]);
+                }
+            };
+
+            const selectAllPassengerCars = () => {
+                const passengerCars = ROLLING_STOCK_TYPES.filter(stock => stock.category === 'Passenger');
+                const allPassengerSelected = passengerCars.every(pc => selectedRollingStock.includes(pc));
+                
+                if (allPassengerSelected) {
+                    // Deselect all passenger cars
+                    setSelectedRollingStock(prev => prev.filter(stock => stock.category !== 'Passenger'));
+                } else {
+                    // Select all passenger cars
+                    const nonPassenger = selectedRollingStock.filter(stock => stock.category !== 'Passenger');
+                    setSelectedRollingStock([...nonPassenger, ...passengerCars]);
+                }
+            };
+
+            const addCustomRailroad = () => {
+                if (customRailroadInput.trim()) {
+                    setCustomRailroads(prev => [...prev, customRailroadInput.trim()]);
+                    setCustomRailroadInput('');
+                }
+            };
+
+            const removeCustomRailroad = (index) => {
+                setCustomRailroads(prev => prev.filter((_, i) => i !== index));
+            };
+
+            const openLocationModal = () => {
+                setEditingLocationIndex(null);
+                setLocationForm({
+                    name: '',
+                    type: '',
+                    customType: '',
+                    capacity: '',
+                    commodities: [],
+                    railroads: []
+                });
+                setShowLocationModal(true);
+            };
+
+            const editLocation = (index) => {
+                const location = locations[index];
+                setEditingLocationIndex(index);
+                setLocationForm({
+                    name: location.name,
+                    type: Object.keys(LOCATION_TYPES).includes(location.type) ? location.type : 'Other/Custom',
+                    customType: Object.keys(LOCATION_TYPES).includes(location.type) ? '' : location.type,
+                    capacity: location.capacity.toString(),
+                    commodities: JSON.parse(JSON.stringify(location.commodities)), // Deep copy
+                    railroads: location.railroads || []
+                });
+                setShowLocationModal(true);
+            };
+
+            const closeLocationModal = () => {
+                setShowLocationModal(false);
+                setEditingLocationIndex(null);
+            };
+
+            const handleLocationTypeChange = (type) => {
+                const newForm = {
+                    ...locationForm,
+                    type: type,
+                    commodities: type && LOCATION_TYPES[type] ? JSON.parse(JSON.stringify(LOCATION_TYPES[type])) : []
+                };
+                setLocationForm(newForm);
+            };
+
+            const addCommodityToLocation = () => {
+                setLocationForm(prev => ({
+                    ...prev,
+                    commodities: [...prev.commodities, { commodity: '', direction: 'Receives', carTypes: [] }]
+                }));
+            };
+
+            const removeCommodityFromLocation = (index) => {
+                setLocationForm(prev => ({
+                    ...prev,
+                    commodities: prev.commodities.filter((_, i) => i !== index)
+                }));
+            };
+
+            const updateCommodity = (index, field, value) => {
+                setLocationForm(prev => {
+                    const newCommodities = [...prev.commodities];
+                    newCommodities[index] = { ...newCommodities[index], [field]: value };
+                    return { ...prev, commodities: newCommodities };
+                });
+            };
+
+            const toggleCarType = (commodityIndex, carType) => {
+                setLocationForm(prev => {
+                    const newCommodities = [...prev.commodities];
+                    const commodity = newCommodities[commodityIndex];
+                    if (commodity.carTypes.includes(carType)) {
+                        commodity.carTypes = commodity.carTypes.filter(ct => ct !== carType);
+                    } else {
+                        commodity.carTypes = [...commodity.carTypes, carType];
+                    }
+                    return { ...prev, commodities: newCommodities };
+                });
+            };
+
+            const saveLocation = () => {
+                const capacity = parseInt(locationForm.capacity);
+                if (!locationForm.name || (!locationForm.type && !locationForm.customType) || !capacity || capacity < 1 || capacity > 999) {
+                    alert('Please fill in all required fields. Capacity must be between 1 and 999.');
+                    return;
+                }
+
+                // Validate railroad assignment
+                if (locationForm.railroads.length === 0) {
+                    alert('Please select at least one railroad for this location');
+                    return;
+                }
+
+                // If no commodities were added, use the default commodities from LOCATION_TYPES
+                let commodities = locationForm.commodities;
+                if (commodities.length === 0 && locationForm.type && LOCATION_TYPES[locationForm.type]) {
+                    commodities = LOCATION_TYPES[locationForm.type];
+                }
+
+                // For Interchange Track, Team Track, or Yard, if no commodities added, use ALL car types and ALL commodities
+                if (commodities.length === 0 && locationForm.type && 
+                    (locationForm.type === 'Interchange Track' || locationForm.type === 'Team Track' || locationForm.type === 'Yard')) {
+                    
+                    // Get all unique commodities from all location types
+                    const allCommodities = new Set();
+                    Object.values(LOCATION_TYPES).forEach(locCommodities => {
+                        locCommodities.forEach(comm => {
+                            if (comm.commodity) {
+                                allCommodities.add(comm.commodity);
+                            }
+                        });
+                    });
+
+                    // Get all car types (both freight and passenger)
+                    const allCarTypes = ROLLING_STOCK_TYPES.map(stock => stock.name);
+
+                    // Create a single commodity entry that accepts all
+                    commodities = [{
+                        commodity: 'All commodities',
+                        direction: 'Both',
+                        carTypes: allCarTypes
+                    }];
+                }
+
+                const location = {
+                    name: locationForm.name,
+                    type: locationForm.type === 'Other/Custom' ? locationForm.customType : locationForm.type,
+                    capacity: capacity,
+                    commodities: commodities,
+                    railroads: locationForm.railroads
+                };
+
+                if (editingLocationIndex !== null) {
+                    // Update existing location
+                    const newLocations = [...locations];
+                    newLocations[editingLocationIndex] = location;
+                    setLocations(newLocations);
+                } else {
+                    // Add new location
+                    setLocations(prev => [...prev, location]);
+                }
+                
+                closeLocationModal();
+            };
+
+            const removeLocation = (index) => {
+                setLocations(prev => prev.filter((_, i) => i !== index));
+            };
+
+            const importLocationsFromJSON = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Validate that this is a Location Catalog Generator export
+                        if (!data.locations || !Array.isArray(data.locations)) {
+                            alert('Invalid file format. Please select a JSON file exported from the Location Catalog Generator.');
+                            return;
+                        }
+
+                        // Convert Location Catalog format to Session Generator format
+                        const importedLocations = data.locations.map(loc => {
+                            // Map commodities from LCG format to Session Generator format
+                            let commodities = [];
+                            if (loc.commodities && Array.isArray(loc.commodities)) {
+                                commodities = loc.commodities.map(comm => ({
+                                    commodity: comm.commodity || '',
+                                    direction: comm.direction || 'Both',
+                                    carTypes: Array.isArray(comm.carTypes) ? comm.carTypes : []
+                                }));
+                            }
+
+                            // Handle location type - LCG might have customType field
+                            let locationType = loc.type;
+                            if (loc.type === 'Other/Custom' && loc.customType) {
+                                locationType = loc.customType;
+                            } else if (!loc.type) {
+                                locationType = 'Other/Custom';
+                            }
+
+                            return {
+                                name: loc.name || 'Unnamed Location',
+                                type: locationType,
+                                capacity: parseInt(loc.capacity) || 10,
+                                commodities: commodities,
+                                railroads: Array.isArray(loc.railroads) ? loc.railroads : []
+                            };
+                        });
+
+                        // Collect unique railroad names from imported locations
+                        const referencedRailroads = new Set();
+                        importedLocations.forEach(loc => {
+                            if (loc.railroads) {
+                                loc.railroads.forEach(rr => referencedRailroads.add(rr));
+                            }
+                        });
+
+                        // Add imported locations to existing locations
+                        setLocations(prev => [...prev, ...importedLocations]);
+
+                        let message = `Successfully imported ${importedLocations.length} location(s)!`;
+                        
+                        if (referencedRailroads.size > 0) {
+                            message += `\n\nRailroads referenced in locations: ${Array.from(referencedRailroads).join(', ')}`;
+                            message += '\n\nRemember to add these railroads in the Railroads section above to generate sessions.';
+                        }
+                        
+                        alert(message);
+                        
+                    } catch (error) {
+                        console.error('Import error:', error);
+                        alert('Error reading file: ' + error.message + '\n\nPlease check the browser console for details.');
+                    }
+                };
+                
+                reader.onerror = () => {
+                    alert('Error reading file. Please try again.');
+                };
+                
+                reader.readAsText(file);
+                event.target.value = ''; // Reset file input
+            };
+
+            const generateSession = () => {
+                // Determine number of jobs based on duration
+                let jobsPerRailroad, switchingComplexity;
+                
+                if (sessionDuration === 'short') {
+                    jobsPerRailroad = 1;
+                    switchingComplexity = 'simple';
+                } else if (sessionDuration === 'medium') {
+                    jobsPerRailroad = Math.floor(Math.random() * 2) + 2; // 2-3 jobs
+                    switchingComplexity = 'moderate';
+                } else if (sessionDuration === 'long') {
+                    jobsPerRailroad = Math.floor(Math.random() * 2) + 4; // 4-5 jobs
+                    switchingComplexity = 'complex';
+                } else { // extra_long
+                    jobsPerRailroad = Math.floor(Math.random() * 3) + 6; // 6-8 jobs
+                    switchingComplexity = 'advanced';
+                }
+
+                const durationLabels = {
+                    'short': 'Short (30 minutes)',
+                    'medium': 'Medium (60 minutes)',
+                    'long': 'Long (90 minutes)',
+                    'extra_long': 'Extra Long (120+ minutes)'
+                };
+                
+                let output = `═══════════════════════════════════════════════════════════════
+TRAINZ RAILROAD SIMULATOR - OPERATION SESSION PLAN
+═══════════════════════════════════════════════════════════════
+
+ROUTE INFORMATION
+─────────────────────────────────────────────────────────────
+Route Name:        ${routeName || 'Unnamed Route'}
+Railroads:         ${selectedRailroadsForSession.map(rr => `${rr.name} (${rr.role === 'player' ? 'Player' : 'AI'})`).join(', ')}
+Era:               ${era || 'Not specified'}
+Region:            ${region || 'Not specified'}
+Session Duration:  ${durationLabels[sessionDuration]}
+Complexity:        ${switchingComplexity.toUpperCase()}
+
+`;
+
+                output += `\nTRAIN ROSTER\n${'─'.repeat(63)}\n\n`;
+
+                // Generate trains for each selected railroad
+                const allTrainOutputs = [];
+                
+                selectedRailroadsForSession.forEach((railroad, rrIdx) => {
+                    // Get locations accessible to this railroad (includes shared Interchange/Yard)
+                    const railroadLocations = locations.filter(loc => 
+                        loc.railroads && loc.railroads.includes(railroad.name)
+                    );
+
+                    if (railroadLocations.length === 0) {
+                        output += `${railroad.name}: No locations assigned to this railroad\n\n`;
+                        return;
+                    }
+
+                    // Get interchange tracks accessible to this railroad
+                    const interchangeTracks = railroadLocations.filter(loc => 
+                        loc.type === 'Interchange Track'
+                    );
+
+                    // Build possible movements for this railroad only
+                    const possibleMovements = [];
+                    
+                    railroadLocations.forEach(location => {
+                        if (location.type === 'Interchange Track') return;
+                        
+                        location.commodities.forEach(comm => {
+                            if (comm.direction === 'Ships' || comm.direction === 'Both') {
+                                if (comm.carTypes.length > 0) {
+                                    possibleMovements.push({
+                                        type: 'outbound',
+                                        location: location,
+                                        commodity: comm.commodity,
+                                        carTypes: comm.carTypes,
+                                        capacity: location.capacity,
+                                        interchangeDestination: interchangeTracks.length > 0 ? 
+                                            interchangeTracks[Math.floor(Math.random() * interchangeTracks.length)] : null
+                                    });
+                                }
+                            }
+                            
+                            if (comm.direction === 'Receives' || comm.direction === 'Both') {
+                                if (comm.carTypes.length > 0) {
+                                    possibleMovements.push({
+                                        type: 'inbound',
+                                        location: location,
+                                        commodity: comm.commodity,
+                                        carTypes: comm.carTypes,
+                                        capacity: location.capacity,
+                                        interchangeOrigin: interchangeTracks.length > 0 ? 
+                                            interchangeTracks[Math.floor(Math.random() * interchangeTracks.length)] : null
+                                    });
+                                }
+                            }
+                        });
+                    });
+
+                    if (possibleMovements.length === 0) {
+                        output += `${railroad.name}: No valid movements (locations need commodities)\n\n`;
+                        return;
+                    }
+
+                    // Pick a locomotive from this railroad's roster
+                    const locos = railroad.locomotives || [];
+                    if (locos.length === 0) {
+                        output += `${railroad.name}: No locomotives assigned\n\n`;
+                        return;
+                    }
+                    const loco = locos[Math.floor(Math.random() * locos.length)];
+                    
+                    const trainSymbol = generateTrainSymbol(railroad.name, [], jobsPerRailroad);
+
+                    output += `Train ${trainSymbol}\n`;
+                    output += `  Railroad:    ${railroad.name} (${railroad.role === 'player' ? 'Player Controlled' : 'AI Controlled'})\n`;
+                    output += `  Locomotive:  ${loco.name}${loco.hp > 0 ? ` (${loco.hp} HP)` : ''}\n`;
+                    output += `  Jobs:        ${jobsPerRailroad}\n\n`;
+
+                    // Generate jobs for this railroad's train
+                    const generatedJobs = [];
+                
+                    // Find yard-type locations for this railroad
+                    const yardLocations = railroadLocations.filter(loc => 
+                        loc.type === 'Yard' || loc.type === 'Team Track'
+                    );
+                    
+                    // Check if there are interchange tracks accessible to this railroad
+                    const hasInterchange = interchangeTracks.length > 0;
+                    let interchangeJobAdded = false;
+                    
+                    // Get rolling stock available to this railroad
+                    const railroadRollingStock = railroad.rollingStock || [];
+                    
+                    // For sessions with an interchange AND a yard/team track, add ONE interchange job first
+                    if (hasInterchange && yardLocations.length > 0 && railroadRollingStock.length > 0) {
+                        const interchange = interchangeTracks[Math.floor(Math.random() * interchangeTracks.length)];
+                        const yard = yardLocations[Math.floor(Math.random() * yardLocations.length)];
+                        
+                        // Determine total cars for interchange job
+                        const interchangeCarCount = Math.min(
+                            Math.floor(Math.random() * 10) + 15, // 15-25 cars
+                            interchange.capacity
+                        );
+                        
+                        // Get a mix of car types from this railroad's rolling stock
+                        const mixedCarTypes = railroadRollingStock
+                            .filter(stock => stock.category === 'Freight')
+                            .map(stock => stock.name);
+                        
+                        if (mixedCarTypes.length > 0) {
+                            generatedJobs.push({
+                                type: 'interchange',
+                                yardLocation: yard,
+                                interchangeLocation: interchange,
+                                numCars: interchangeCarCount,
+                                carTypes: mixedCarTypes,
+                                commodity: 'Mixed freight'
+                            });
+                            interchangeJobAdded = true;
+                        }
+                    }
+                    
+                    // Generate remaining industry jobs
+                    const remainingJobs = interchangeJobAdded ? jobsPerRailroad - 1 : jobsPerRailroad;
+                    const nonInterchangeLocations = railroadLocations.filter(loc => loc.type !== 'Interchange Track');
+                    
+                    for (let i = 0; i < remainingJobs && possibleMovements.length > 0; i++) {
+                        // Pick a random movement from possible movements
+                        const movementIdx = Math.floor(Math.random() * possibleMovements.length);
+                        const movement = possibleMovements[movementIdx];
+                        
+                        // Determine number of cars
+                        const maxCars = movement.capacity;
+                        const numCars = Math.min(
+                            Math.floor(Math.random() * Math.max(1, maxCars - 3)) + 3,
+                            maxCars
+                        );
+                        
+                        // Build consist from compatible car types using this railroad's rolling stock
+                        const consist = buildConsist(numCars, movement.carTypes, movement.commodity, railroadRollingStock);
+                        
+                        if (consist.length > 0) {
+                            let origin, destination;
+                            
+                            if (movement.type === 'outbound') {
+                                origin = movement.location;
+                                destination = movement.interchangeDestination || yardLocations[0];
+                            } else {
+                                origin = movement.interchangeOrigin || yardLocations[0];
+                                destination = movement.location;
+                            }
+                            
+                            if (origin && destination) {
+                                generatedJobs.push({
+                                    type: movement.type === 'outbound' ? 'pickup' : 'setout',
+                                    origin: origin,
+                                    destination: destination,
+                                    numCars: consist.length,
+                                    consist: consist,
+                                    commodity: movement.commodity
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Generate job details output for this railroad's train
+                    if (generatedJobs.length > 0) {
+                        output += `\nOPERATING INSTRUCTIONS - ${railroad.name}\n${'─'.repeat(63)}\n\n`;
+                        
+                        generatedJobs.forEach((job, idx) => {
+                            output += `Job ${idx + 1}:\n`;
+                            
+                            if (job.type === 'interchange') {
+                                output += `   - Start at ${job.yardLocation.name}\n`;
+                                output += `   - Proceed to ${job.interchangeLocation.name} (Interchange)\n`;
+                                output += `   - Set out outbound cars for connecting railroad\n`;
+                                output += `   - Pick up ${job.numCars} inbound cars from connecting railroad\n`;
+                                output += `   - Return to ${job.yardLocation.name} for sorting\n`;
+                                output += `   Cars: ${job.numCars} mixed freight cars\n`;
+                            } else if (job.type === 'pickup') {
+                                output += `   - Pickup from ${job.origin.name}\n`;
+                                output += `   - Deliver to ${job.destination.name}\n`;
+                                output += `   - Commodity: ${job.commodity}\n`;
+                                output += `   Consist: ${job.numCars} cars\n`;
+                                job.consist.forEach(car => {
+                                    output += `            - ${car.count}x ${car.type}\n`;
+                                });
+                            } else if (job.type === 'setout') {
+                                output += `   - Pickup from ${job.origin.name}\n`;
+                                output += `   - Deliver to ${job.destination.name}\n`;
+                                output += `   - Commodity: ${job.commodity}\n`;
+                                output += `   Consist: ${job.numCars} cars\n`;
+                                job.consist.forEach(car => {
+                                    output += `            - ${car.count}x ${car.type}\n`;
+                                });
+                            }
+                            output += `\n`;
+                        });
+                    } else {
+                        output += `No jobs generated for ${railroad.name}\n\n`;
+                    }
+                });
+
+                // General procedures
+                output += `\nGENERAL PROCEDURES:\n`;
+                output += `- Follow prototypical operating practices\n`;
+                output += `- Observe all speed restrictions and signal aspects\n`;
+                const hasInterchanges = locations.some(loc => loc.type === 'Interchange Track');
+                if (hasInterchanges) {
+                    output += `- Interchange tracks represent connection points between railroads\n`;
+                }
+                const aiRailroads = selectedRailroadsForSession.filter(rr => rr.role === 'ai');
+                if (aiRailroads.length > 0) {
+                    output += `- AI Railroads (background traffic): ${aiRailroads.map(rr => rr.name).join(', ')}\n`;
+                }
+                output += `- Session complete when all jobs are finished\n\n`;
+
+                // Location details
+                if (locations.length > 0) {
+                    output += `\nLOCATION REFERENCE\n${'─'.repeat(63)}\n\n`;
+                    locations.forEach(loc => {
+                        output += `${loc.name} (${loc.type})\n`;
+                        output += `  Served by: ${loc.railroads.join(', ')}\n`;
+                        output += `  Track Capacity: ${loc.capacity} cars\n`;
+                        if (loc.commodities.length > 0) {
+                            output += `  Commodities:\n`;
+                            loc.commodities.forEach(comm => {
+                                output += `    • ${comm.commodity} (${comm.direction}) - ${comm.carTypes.join(', ')}\n`;
+                            });
+                        }
+                        output += `\n`;
+                    });
+                }
+
+                output += `\n${'═'.repeat(63)}\nEnd of Session Plan\n${'═'.repeat(63)}`;
+
+                setSessionOutput(output);
+            };
+
+            const buildConsist = (numCars, compatibleCarTypes, commodity, availableRollingStock) => {
+                if (compatibleCarTypes.length === 0) return [];
+
+                // Find actual rolling stock objects that match the compatible car type names
+                const availableStockTypes = availableRollingStock.filter(stock => 
+                    compatibleCarTypes.includes(stock.name)
+                );
+
+                if (availableStockTypes.length === 0) return [];
+
+                const consist = [];
+                let remainingCars = numCars;
+
+                // Distribute cars across compatible types
+                while (remainingCars > 0 && availableStockTypes.length > 0) {
+                    const stockType = availableStockTypes[Math.floor(Math.random() * availableStockTypes.length)];
+                    const count = Math.min(
+                        Math.floor(Math.random() * Math.min(15, remainingCars)) + 1,
+                        remainingCars
+                    );
+                    
+                    // Check if we already have this car type in the consist
+                    const existingEntry = consist.find(c => c.type === stockType.name);
+                    if (existingEntry) {
+                        existingEntry.count += count;
+                    } else {
+                        consist.push({
+                            type: stockType.name,
+                            count: count
+                        });
+                    }
+
+                    remainingCars -= count;
+                }
+
+                return consist;
+            };
+
+            const generateTrainSymbol = (railroad, customRailroads, numJobs) => {
+                // If custom railroad exists, use first letter of custom railroad name
+                if (customRailroads.length > 0) {
+                    const customRailroad = customRailroads[0];
+                    const firstLetter = customRailroad.charAt(0).toUpperCase();
+                    const jobCount = String(numJobs).padStart(3, '0');
+                    return `${firstLetter}-${jobCount}`;
+                }
+                
+                // Otherwise use random prefix for standard railroads
+                const prefixes = ['M', 'Z', 'Q', 'H', 'G'];
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const suffix = String(Math.floor(Math.random() * 900) + 100);
+                return `${prefix}-${suffix}`;
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(sessionOutput);
+                alert('Session plan copied to clipboard!');
+            };
+
+            const canGenerate = routeName && railroads.length > 0 && selectedRailroadsForSession.length > 0 && era && region && 
+                               selectedRailroadsForSession.every(rr => rr.locomotives && rr.locomotives.length > 0) &&
+                               selectedRailroadsForSession.every(rr => rr.rollingStock && rr.rollingStock.length > 0) &&
+                               locations.length >= 2;
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>Trainz Session Generator</h1>
+                        <p>Create realistic operating sessions for your railroad</p>
+                    </div>
+
+                    <div className="content">
+                        {/* Route Metadata */}
+                        <div className="section">
+                            <h2>Route Information</h2>
+                            <div className="form-group">
+                                <label>Route Name</label>
+                                <input 
+                                    type="text" 
+                                    value={routeName}
+                                    onChange={(e) => setRouteName(e.target.value)}
+                                    placeholder="e.g., Cascade Division"
+                                />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Era</label>
+                                    <select value={era} onChange={(e) => setEra(e.target.value)}>
+                                        <option value="">Select era...</option>
+                                        {ERAS.map(e => (
+                                            <option key={e} value={e}>{e}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Region</label>
+                                <select value={region} onChange={(e) => setRegion(e.target.value)}>
+                                    <option value="">Select region...</option>
+                                    {REGIONS.map(r => (
+                                        <option key={r} value={r}>{r}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Session Duration</label>
+                                <p style={{fontSize: '0.85em', color: '#666', marginBottom: '8px', fontStyle: 'italic'}}>Durations are approximate.</p>
+                                <select value={sessionDuration} onChange={(e) => setSessionDuration(e.target.value)}>
+                                    <option value="short">Short (30 minutes)</option>
+                                    <option value="medium">Medium (60 minutes)</option>
+                                    <option value="long">Long (90 minutes)</option>
+                                    <option value="extra_long">Extra Long (120+ minutes)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Railroads Section */}
+                        <div className="section">
+                            <h2>Railroads on this Route</h2>
+                            <p style={{color: '#666', marginBottom: '20px', fontSize: '0.95em'}}>
+                                Add all railroads depicted on your route. For each session, you can select which railroads to include.
+                            </p>
+                            
+                            <button className="button" onClick={openRailroadModal} style={{marginBottom: '20px'}}>
+                                + Add Railroad
+                            </button>
+
+                            {railroads.length === 0 ? (
+                                <p style={{color: '#666', fontStyle: 'italic'}}>
+                                    No railroads added yet. Add at least one railroad to generate sessions.
+                                </p>
+                            ) : (
+                                <div>
+                                    {railroads.map((rr, idx) => (
+                                        <div key={idx} className="railroad-card">
+                                            <div className="railroad-header">
+                                                <div>
+                                                    <span className="railroad-name">{rr.name}</span>
+                                                    <span className={`railroad-badge ${rr.type.toLowerCase().replace(' ', '-')}`}>
+                                                        {rr.type}
+                                                    </span>
+                                                    <span className={`railroad-badge ${rr.role}`}>
+                                                        {rr.role === 'player' ? '👤 Player Controlled' : '🤖 AI Controlled'}
+                                                    </span>
+                                                </div>
+                                                <div className="railroad-actions">
+                                                    <button 
+                                                        className="edit-button"
+                                                        onClick={() => openEditRailroadModal(idx)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        className="delete-button"
+                                                        onClick={() => removeRailroad(idx)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div style={{marginTop: '10px', fontSize: '0.9em', color: '#666'}}>
+                                                🚂 {rr.locomotives?.length || 0} locomotive(s) • 
+                                                🚃 {rr.rollingStock?.length || 0} rolling stock type(s)
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Railroad Selection for Session */}
+                            {railroads.length > 0 && (
+                                <div className="railroad-selection-area" style={{marginTop: '30px'}}>
+                                    <div className="railroad-selection-header">
+                                        Select Railroads for Session Generation
+                                    </div>
+                                    <p style={{color: '#666', marginBottom: '15px', fontSize: '0.9em'}}>
+                                        Choose which railroads will be included in the generated session. Player-controlled railroads will have detailed switching instructions, while AI-controlled railroads will have basic movement instructions.
+                                    </p>
+                                    <div style={{display: 'grid', gap: '10px'}}>
+                                        {railroads.map((rr, idx) => (
+                                            <div 
+                                                key={idx}
+                                                onClick={() => toggleRailroadForSession(rr)}
+                                                style={{
+                                                    background: selectedRailroadsForSession.find(srr => srr.name === rr.name) ? '#f0fff4' : '#f8f9fa',
+                                                    border: selectedRailroadsForSession.find(srr => srr.name === rr.name) ? '2px solid #28a745' : '2px solid #e0e0e0',
+                                                    borderRadius: '6px',
+                                                    padding: '15px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <input 
+                                                    type="checkbox"
+                                                    checked={selectedRailroadsForSession.find(srr => srr.name === rr.name) !== undefined}
+                                                    onChange={() => {}}
+                                                    style={{marginRight: '10px'}}
+                                                />
+                                                <strong>{rr.name}</strong>
+                                                <span style={{marginLeft: '10px', color: '#666', fontSize: '0.9em'}}>
+                                                    ({rr.type} • {rr.role === 'player' ? 'Player' : 'AI'})
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Locations */}
+                        <div className="section">
+                            <h2>Locations</h2>
+                            <div style={{marginBottom: '20px', display: 'flex', gap: '10px'}}>
+                                <button className="button" onClick={openLocationModal}>
+                                    + Add Location
+                                </button>
+                                <label className="button" style={{margin: 0, background: 'linear-gradient(135deg, #2a5298 0%, #1e3c72 100%)', cursor: 'pointer'}}>
+                                    📥 Import Locations
+                                    <input 
+                                        type="file" 
+                                        accept=".json" 
+                                        onChange={importLocationsFromJSON}
+                                        style={{display: 'none'}}
+                                    />
+                                </label>
+                            </div>
+                            {locations.length === 0 ? (
+                                <p style={{color: '#666'}}>No locations added yet. Add at least 2 locations to generate a session.</p>
+                            ) : (
+                                <div>
+                                    {[...locations].reverse().map((loc, reverseIdx) => {
+                                        const idx = locations.length - 1 - reverseIdx; // Get actual index
+                                        return (
+                                        <div key={idx} style={{
+                                            background: '#f5f5f5',
+                                            padding: '20px',
+                                            borderRadius: '8px',
+                                            marginBottom: '15px',
+                                            border: '2px solid #ddd'
+                                        }}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px'}}>
+                                                <div>
+                                                    <h3 style={{margin: '0 0 5px 0', color: '#1e3c72'}}>{loc.name}</h3>
+                                                    <p style={{margin: '0', color: '#666'}}>
+                                                        <strong>Type:</strong> {loc.type} | <strong>Capacity:</strong> {loc.capacity} cars
+                                                    </p>
+                                                </div>
+                                                <div style={{display: 'flex', gap: '10px'}}>
+                                                    <button 
+                                                        onClick={() => editLocation(idx)}
+                                                        style={{
+                                                            background: '#2a5298',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            padding: '8px 15px',
+                                                            borderRadius: '4px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => removeLocation(idx)}
+                                                        style={{
+                                                            background: '#d32f2f',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            padding: '8px 15px',
+                                                            borderRadius: '4px',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {loc.commodities.length > 0 && (
+                                                <div style={{marginTop: '15px'}}>
+                                                    <strong style={{display: 'block', marginBottom: '8px'}}>Commodities:</strong>
+                                                    {loc.commodities.map((comm, cIdx) => (
+                                                        <div key={cIdx} style={{
+                                                            background: 'white',
+                                                            padding: '10px',
+                                                            borderRadius: '4px',
+                                                            marginBottom: '8px',
+                                                            fontSize: '0.95em'
+                                                        }}>
+                                                            <strong>{comm.commodity}</strong> ({comm.direction})
+                                                            <br />
+                                                            <span style={{color: '#666'}}>
+                                                                Car Types: {comm.carTypes.join(', ') || 'None selected'}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Generate Button */}
+                        <div className="generate-section">
+                            <button 
+                                className="button" 
+                                onClick={generateSession}
+                                disabled={!canGenerate}
+                            >
+                                Generate Session Plan
+                            </button>
+                            {!canGenerate && (
+                                <p style={{marginTop: '15px', color: '#666'}}>
+                                    Please complete all fields and select at least one locomotive, one rolling stock type, and two locations.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Output */}
+                        {sessionOutput && (
+                            <div className="output-section">
+                                <h2>Generated Session Plan</h2>
+                                <div className="session-output">
+                                    {sessionOutput}
+                                </div>
+                                <button className="button copy-button" onClick={copyToClipboard}>
+                                    Copy to Clipboard
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Location Modal */}
+                    {showLocationModal && (
+                        <div className="modal-overlay" onClick={closeLocationModal}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3>{editingLocationIndex !== null ? 'Edit Location' : 'Add Location'}</h3>
+                                    <button className="modal-close" onClick={closeLocationModal}>×</button>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="form-group">
+                                        <label>Location Name *</label>
+                                        <input 
+                                            type="text"
+                                            value={locationForm.name}
+                                            onChange={(e) => setLocationForm({...locationForm, name: e.target.value})}
+                                            placeholder="e.g., Springfield Steel Mill"
+                                        />
+                                    </div>
+
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Location Type *</label>
+                                            <select 
+                                                value={locationForm.type} 
+                                                onChange={(e) => handleLocationTypeChange(e.target.value)}
+                                            >
+                                                <option value="">Select type...</option>
+                                                {Object.keys(LOCATION_TYPES).sort().map(type => (
+                                                    <option key={type} value={type}>{type}</option>
+                                                ))}
+                                            </select>
+                                            {locationForm.type === 'Other/Custom' && (
+                                                <input 
+                                                    type="text"
+                                                    value={locationForm.customType}
+                                                    onChange={(e) => setLocationForm({...locationForm, customType: e.target.value})}
+                                                    placeholder="Enter custom type..."
+                                                    style={{marginTop: '10px'}}
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Track Capacity (cars) *</label>
+                                            <input 
+                                                type="number"
+                                                min="1"
+                                                max="999"
+                                                value={locationForm.capacity}
+                                                onChange={(e) => setLocationForm({...locationForm, capacity: e.target.value})}
+                                                placeholder="e.g., 15"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Railroad(s) *</label>
+                                        <p style={{fontSize: '0.85em', color: '#666', marginBottom: '10px'}}>
+                                            {locationForm.type === 'Interchange Track' || locationForm.type === 'Yard' 
+                                                ? 'Interchange and Yard locations can be shared by multiple railroads'
+                                                : 'Select one railroad for this location'}
+                                        </p>
+                                        <div style={{
+                                            maxHeight: '150px',
+                                            overflowY: 'auto',
+                                            padding: '10px',
+                                            background: '#f8f9fa',
+                                            borderRadius: '6px',
+                                            border: '1px solid #ddd'
+                                        }}>
+                                            {railroads.length === 0 ? (
+                                                <p style={{color: '#999', fontStyle: 'italic', margin: 0}}>
+                                                    No railroads added yet. Please add railroads first.
+                                                </p>
+                                            ) : (
+                                                railroads.map((rr, idx) => (
+                                                    <div key={idx} style={{
+                                                        padding: '8px',
+                                                        marginBottom: '5px',
+                                                        background: 'white',
+                                                        borderRadius: '4px',
+                                                        display: 'flex',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <input 
+                                                            type={locationForm.type === 'Interchange Track' || locationForm.type === 'Yard' ? 'checkbox' : 'radio'}
+                                                            id={`loc-rr-${idx}`}
+                                                            checked={locationForm.railroads.includes(rr.name)}
+                                                            onChange={() => {
+                                                                if (locationForm.type === 'Interchange Track' || locationForm.type === 'Yard') {
+                                                                    // Allow multiple
+                                                                    const exists = locationForm.railroads.includes(rr.name);
+                                                                    if (exists) {
+                                                                        setLocationForm({
+                                                                            ...locationForm,
+                                                                            railroads: locationForm.railroads.filter(n => n !== rr.name)
+                                                                        });
+                                                                    } else {
+                                                                        setLocationForm({
+                                                                            ...locationForm,
+                                                                            railroads: [...locationForm.railroads, rr.name]
+                                                                        });
+                                                                    }
+                                                                } else {
+                                                                    // Allow only one
+                                                                    setLocationForm({
+                                                                        ...locationForm,
+                                                                        railroads: [rr.name]
+                                                                    });
+                                                                }
+                                                            }}
+                                                            style={{marginRight: '8px'}}
+                                                        />
+                                                        <label htmlFor={`loc-rr-${idx}`} style={{cursor: 'pointer', margin: 0}}>
+                                                            {rr.name}
+                                                        </label>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{marginTop: '30px'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                                            <h3 style={{margin: 0, color: '#1e3c72'}}>Commodities</h3>
+                                            <button 
+                                                onClick={addCommodityToLocation}
+                                                style={{
+                                                    background: '#2a5298',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '8px 16px',
+                                                    borderRadius: '6px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.95em'
+                                                }}
+                                            >
+                                                + Add Custom Commodity
+                                            </button>
+                                        </div>
+
+                                        {locationForm.type === 'Other/Custom' && (
+                                            <div style={{marginBottom: '20px', padding: '15px', background: '#f0f0f0', borderRadius: '6px'}}>
+                                                <h4 style={{margin: '0 0 10px 0'}}>Add Default Commodities</h4>
+                                                <p style={{fontSize: '0.9em', color: '#666', marginBottom: '10px'}}>Select commodities from the list below to add them to this location:</p>
+                                                <div style={{maxHeight: '200px', overflowY: 'auto', border: '1px solid #ddd', borderRadius: '4px', padding: '10px', background: 'white'}}>
+                                                    {getAllDefaultCommodities().map((defaultComm, idx) => (
+                                                        <div key={idx} style={{marginBottom: '8px'}}>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setLocationForm(prev => ({
+                                                                        ...prev,
+                                                                        commodities: [...prev.commodities, JSON.parse(JSON.stringify(defaultComm))]
+                                                                    }));
+                                                                }}
+                                                                style={{
+                                                                    background: '#2a5298',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '4px',
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '0.85em',
+                                                                    width: '100%',
+                                                                    textAlign: 'left'
+                                                                }}
+                                                            >
+                                                                + {defaultComm.commodity} ({defaultComm.direction})
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {locationForm.commodities.length === 0 ? (
+                                            <p style={{color: '#666', fontStyle: 'italic'}}>
+                                                No commodities added. {locationForm.type === 'Other/Custom' ? 'Select from default commodities above or click "Add Custom Commodity" to create your own.' : 'Click "Add Custom Commodity" to add one.'}
+                                            </p>
+                                        ) : (
+                                            [...locationForm.commodities].reverse().map((comm, reverseIdx) => {
+                                                const idx = locationForm.commodities.length - 1 - reverseIdx;
+                                                return (
+                                                <div key={idx} className="commodity-row">
+                                                    <div className="commodity-header">
+                                                        <h4>Commodity {idx + 1}</h4>
+                                                        <button 
+                                                            className="remove-commodity-btn"
+                                                            onClick={() => removeCommodityFromLocation(idx)}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="form-group" style={{marginBottom: '15px'}}>
+                                                        <label>Commodity Name</label>
+                                                        <input 
+                                                            type="text"
+                                                            value={comm.commodity}
+                                                            onChange={(e) => updateCommodity(idx, 'commodity', e.target.value)}
+                                                            placeholder="e.g., Coal, Steel Coils, Lumber"
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group" style={{marginBottom: '15px'}}>
+                                                        <label>Direction</label>
+                                                        <select 
+                                                            value={comm.direction}
+                                                            onChange={(e) => updateCommodity(idx, 'direction', e.target.value)}
+                                                        >
+                                                            <option value="Receives">Receives</option>
+                                                            <option value="Ships">Ships</option>
+                                                            <option value="Both">Both</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <label>Compatible Car Types</label>
+                                                        <div className="car-types-grid">
+                                                            {ROLLING_STOCK_TYPES.map(stock => (
+                                                                <div key={stock.name} className="car-type-checkbox">
+                                                                    <input 
+                                                                        type="checkbox"
+                                                                        id={`comm-${idx}-${stock.name}`}
+                                                                        checked={comm.carTypes.includes(stock.name)}
+                                                                        onChange={() => toggleCarType(idx, stock.name)}
+                                                                    />
+                                                                    <label htmlFor={`comm-${idx}-${stock.name}`}>
+                                                                        {stock.name}
+                                                                    </label>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button 
+                                        onClick={closeLocationModal}
+                                        style={{
+                                            background: '#999',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="button"
+                                        onClick={saveLocation}
+                                        style={{margin: 0}}
+                                    >
+                                        Save Location
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Railroad Modal */}
+                    {showRailroadModal && (
+                        <div className="modal-overlay" onClick={closeRailroadModal}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>{editingRailroadIndex !== null ? 'Edit Railroad' : 'Add Railroad'}</h2>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="form-group">
+                                        <label>Select Railroad</label>
+                                        <select 
+                                            value={railroadForm.name}
+                                            onChange={(e) => {
+                                                const selectedValue = e.target.value;
+                                                if (selectedValue === 'Other/Custom') {
+                                                    setRailroadForm({...railroadForm, name: 'Other/Custom'});
+                                                } else if (selectedValue) {
+                                                    setRailroadForm({...railroadForm, name: selectedValue});
+                                                }
+                                            }}
+                                        >
+                                            <option value="">Select railroad...</option>
+                                            {RAILROADS.map(rr => (
+                                                <option key={rr} value={rr}>{rr}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {railroadForm.name === 'Other/Custom' && (
+                                        <div className="form-group">
+                                            <label>Custom Railroad Name</label>
+                                            <input 
+                                                type="text"
+                                                value={railroadForm.customName || ''}
+                                                onChange={(e) => setRailroadForm({...railroadForm, customName: e.target.value})}
+                                                placeholder="e.g., Terminal Railroad Association"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="form-group">
+                                        <label>Railroad Type</label>
+                                        <select 
+                                            value={railroadForm.type}
+                                            onChange={(e) => setRailroadForm({...railroadForm, type: e.target.value})}
+                                        >
+                                            <option value="">Select type...</option>
+                                            <option value="Class I">Class I (Major freight railroad)</option>
+                                            <option value="Regional">Regional Railroad</option>
+                                            <option value="Short Line">Short Line</option>
+                                            <option value="Terminal">Terminal / Switching Railroad</option>
+                                            <option value="Passenger">Passenger Railroad</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Control Mode</label>
+                                        <select 
+                                            value={railroadForm.role}
+                                            onChange={(e) => setRailroadForm({...railroadForm, role: e.target.value})}
+                                        >
+                                            <option value="player">👤 Player Controlled (Detailed switching instructions)</option>
+                                            <option value="ai">🤖 AI Controlled (Background traffic)</option>
+                                        </select>
+                                        <p style={{fontSize: '0.85em', color: '#666', marginTop: '8px', fontStyle: 'italic'}}>
+                                            Player-controlled railroads will have detailed job instructions. AI-controlled railroads will have basic movement patterns for background traffic.
+                                        </p>
+                                    </div>
+
+                                    {/* Locomotives for this Railroad */}
+                                    <div style={{marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #e0e0e0'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                                            <h3 style={{margin: 0, color: '#1e3c72'}}>Locomotives</h3>
+                                            <div style={{display: 'flex', gap: '10px'}}>
+                                                <button 
+                                                    onClick={openCustomLocoModal}
+                                                    style={{
+                                                        background: '#28a745',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9em'
+                                                    }}
+                                                >
+                                                    + Custom Loco
+                                                </button>
+                                                <button 
+                                                    onClick={selectAllRailroadLocos}
+                                                    style={{
+                                                        background: '#2a5298',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9em'
+                                                    }}
+                                                >
+                                                    Select All
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="asset-list">
+                                            {LOCOMOTIVE_TYPES.map(loco => (
+                                                <div key={loco.name} className="asset-item">
+                                                    <input 
+                                                        type="checkbox"
+                                                        id={`rr-loco-${loco.name}`}
+                                                        checked={railroadForm.locomotives.some(l => l.name === loco.name)}
+                                                        onChange={() => toggleRailroadLoco(loco)}
+                                                    />
+                                                    <label htmlFor={`rr-loco-${loco.name}`}>
+                                                        {loco.name}<br />
+                                                        <small>{loco.hp} HP • {loco.type}</small>
+                                                    </label>
+                                                </div>
+                                            ))}
+                                            {customLocos.map((loco, idx) => (
+                                                <div key={`custom-loco-${idx}`} className="asset-item" style={{borderLeft: '4px solid #28a745'}}>
+                                                    <input 
+                                                        type="checkbox"
+                                                        id={`rr-loco-custom-${idx}`}
+                                                        checked={railroadForm.locomotives.some(l => l.name === loco.name)}
+                                                        onChange={() => toggleRailroadLoco(loco)}
+                                                    />
+                                                    <label htmlFor={`rr-loco-custom-${idx}`}>
+                                                        {loco.name} ⭐<br />
+                                                        <small>{loco.hp} HP • {loco.type}</small>
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Rolling Stock for this Railroad */}
+                                    <div style={{marginTop: '30px', paddingTop: '20px', borderTop: '2px solid #e0e0e0'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                                            <h3 style={{margin: 0, color: '#1e3c72'}}>Rolling Stock</h3>
+                                            <div style={{display: 'flex', gap: '10px'}}>
+                                                <button 
+                                                    onClick={openCustomCarModal}
+                                                    style={{
+                                                        background: '#28a745',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9em'
+                                                    }}
+                                                >
+                                                    + Custom Car
+                                                </button>
+                                                <button 
+                                                    onClick={selectAllRailroadRollingStock}
+                                                    style={{
+                                                        background: '#2a5298',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9em'
+                                                    }}
+                                                >
+                                                    Select All
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Freight Cars */}
+                                        <div style={{marginBottom: '20px'}}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                                                <h4 style={{margin: 0, color: '#1e3c72', fontSize: '1.1em'}}>Freight Cars</h4>
+                                                <button 
+                                                    onClick={selectAllRailroadFreight}
+                                                    style={{
+                                                        background: '#2a5298',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '6px 14px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.85em'
+                                                    }}
+                                                >
+                                                    Select All Freight
+                                                </button>
+                                            </div>
+                                            <div className="asset-list">
+                                                {ROLLING_STOCK_TYPES.filter(stock => stock.category === 'Freight').map(stock => (
+                                                    <div key={stock.name} className="asset-item">
+                                                        <input 
+                                                            type="checkbox"
+                                                            id={`rr-stock-${stock.name}`}
+                                                            checked={railroadForm.rollingStock.some(s => s.name === stock.name)}
+                                                            onChange={() => toggleRailroadRollingStock(stock)}
+                                                        />
+                                                        <label htmlFor={`rr-stock-${stock.name}`}>
+                                                            {stock.name}<br />
+                                                            <small>{stock.commodities.join(', ')}</small>
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                                {customCars.map((car, idx) => (
+                                                    <div key={`custom-${idx}`} className="asset-item" style={{borderLeft: '4px solid #28a745'}}>
+                                                        <input 
+                                                            type="checkbox"
+                                                            id={`rr-stock-custom-${idx}`}
+                                                            checked={railroadForm.rollingStock.some(s => s.name === car.name)}
+                                                            onChange={() => toggleRailroadRollingStock(car)}
+                                                        />
+                                                        <label htmlFor={`rr-stock-custom-${idx}`}>
+                                                            {car.name} ⭐<br />
+                                                            <small>{car.length}' • {car.commodities.join(', ')}</small>
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Passenger Cars */}
+                                        <div>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                                                <h4 style={{margin: 0, color: '#1e3c72', fontSize: '1.1em'}}>Passenger Cars</h4>
+                                                <button 
+                                                    onClick={selectAllRailroadPassenger}
+                                                    style={{
+                                                        background: '#2a5298',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '6px 14px',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.85em'
+                                                    }}
+                                                >
+                                                    Select All Passenger
+                                                </button>
+                                            </div>
+                                            <div className="asset-list">
+                                                {ROLLING_STOCK_TYPES.filter(stock => stock.category === 'Passenger').map(stock => (
+                                                    <div key={stock.name} className="asset-item">
+                                                        <input 
+                                                            type="checkbox"
+                                                            id={`rr-stock-pass-${stock.name}`}
+                                                            checked={railroadForm.rollingStock.some(s => s.name === stock.name)}
+                                                            onChange={() => toggleRailroadRollingStock(stock)}
+                                                        />
+                                                        <label htmlFor={`rr-stock-pass-${stock.name}`}>
+                                                            {stock.name}<br />
+                                                            <small>{stock.commodities.join(', ')}</small>
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button 
+                                        onClick={closeRailroadModal}
+                                        style={{
+                                            background: '#999',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="button"
+                                        onClick={saveRailroad}
+                                        style={{margin: 0}}
+                                    >
+                                        Save Railroad
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Custom Locomotive Modal */}
+                    {showCustomLocoModal && (
+                        <div className="modal-overlay" onClick={closeCustomLocoModal}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>Add Custom Locomotive</h2>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="form-group">
+                                        <label>Locomotive Name</label>
+                                        <input 
+                                            type="text"
+                                            value={customLocoForm.name}
+                                            onChange={(e) => setCustomLocoForm({...customLocoForm, name: e.target.value})}
+                                            placeholder="e.g., ALCO PA-1, EMD F40PH"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Horsepower (HP)</label>
+                                        <input 
+                                            type="number"
+                                            min="100"
+                                            max="10000"
+                                            value={customLocoForm.hp}
+                                            onChange={(e) => setCustomLocoForm({...customLocoForm, hp: e.target.value})}
+                                            placeholder="e.g., 3000, 4400"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Locomotive Type</label>
+                                        <select 
+                                            value={customLocoForm.type}
+                                            onChange={(e) => setCustomLocoForm({...customLocoForm, type: e.target.value})}
+                                        >
+                                            <option value="Diesel">Diesel</option>
+                                            <option value="Electric">Electric</option>
+                                            <option value="Steam">Steam</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button 
+                                        onClick={closeCustomLocoModal}
+                                        style={{
+                                            background: '#999',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="button"
+                                        onClick={saveCustomLoco}
+                                        style={{margin: 0}}
+                                    >
+                                        Add Custom Locomotive
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Custom Car Modal */}
+                    {showCustomCarModal && (
+                        <div className="modal-overlay" onClick={closeCustomCarModal}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h2>Add Custom Car Type</h2>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="form-group">
+                                        <label>Car Type Name</label>
+                                        <input 
+                                            type="text"
+                                            value={customCarForm.name}
+                                            onChange={(e) => setCustomCarForm({...customCarForm, name: e.target.value})}
+                                            placeholder="e.g., 89' Flat Car"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Car Length (feet)</label>
+                                        <input 
+                                            type="number"
+                                            min="20"
+                                            max="200"
+                                            value={customCarForm.length}
+                                            onChange={(e) => setCustomCarForm({...customCarForm, length: e.target.value})}
+                                            placeholder="e.g., 50, 60, 89"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label>Commodities This Car Can Carry</label>
+                                        <p style={{fontSize: '0.85em', color: '#666', marginBottom: '10px'}}>
+                                            Select all commodities this car type can transport:
+                                        </p>
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                            gap: '10px',
+                                            maxHeight: '300px',
+                                            overflowY: 'auto',
+                                            padding: '10px',
+                                            background: '#f8f9fa',
+                                            borderRadius: '6px'
+                                        }}>
+                                            {COMMODITIES.map(commodity => (
+                                                <div key={commodity} style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '8px',
+                                                    background: 'white',
+                                                    borderRadius: '4px'
+                                                }}>
+                                                    <input 
+                                                        type="checkbox"
+                                                        id={`custom-car-comm-${commodity}`}
+                                                        checked={customCarForm.commodities.includes(commodity)}
+                                                        onChange={() => toggleCustomCarCommodity(commodity)}
+                                                        style={{marginRight: '8px'}}
+                                                    />
+                                                    <label htmlFor={`custom-car-comm-${commodity}`} style={{fontSize: '0.9em', cursor: 'pointer'}}>
+                                                        {commodity}
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button 
+                                        onClick={closeCustomCarModal}
+                                        style={{
+                                            background: '#999',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '10px 20px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        className="button"
+                                        onClick={saveCustomCar}
+                                        style={{margin: 0}}
+                                    >
+                                        Add Custom Car
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
